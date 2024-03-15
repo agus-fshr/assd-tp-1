@@ -50,7 +50,7 @@
          <attribute name="title">
           <string>FAA</string>
          </attribute>
-         <widget class="QRadioButton" name="radioButton">
+         <widget class="QRadioButton" name="faaenable">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -93,10 +93,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_4"/>
+            <widget class="QLineEdit" name="faafpline"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_4">
+            <widget class="QComboBox" name="faafpbox">
              <item>
               <property name="text">
                <string>Hz</string>
@@ -134,10 +134,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_5"/>
+            <widget class="QLineEdit" name="faafaline"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_5">
+            <widget class="QComboBox" name="faafabox">
              <item>
               <property name="text">
                <string>Hz</string>
@@ -175,7 +175,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_6"/>
+            <widget class="QLineEdit" name="faaapline"/>
            </item>
           </layout>
          </widget>
@@ -202,7 +202,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_7"/>
+            <widget class="QLineEdit" name="faaaaline"/>
            </item>
           </layout>
          </widget>
@@ -211,7 +211,7 @@
          <attribute name="title">
           <string>S/H</string>
          </attribute>
-         <widget class="QRadioButton" name="radioButton_2">
+         <widget class="QRadioButton" name="shenabale">
           <property name="geometry">
            <rect>
             <x>10</x>
@@ -254,10 +254,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_8"/>
+            <widget class="QLineEdit" name="shfrecline"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_6">
+            <widget class="QComboBox" name="shfrecbox">
              <item>
               <property name="text">
                <string>Hz</string>
@@ -277,7 +277,7 @@
          <attribute name="title">
           <string>LLave Analógica</string>
          </attribute>
-         <widget class="QRadioButton" name="radioButton_3">
+         <widget class="QRadioButton" name="llaveanalenable">
           <property name="geometry">
            <rect>
             <x>20</x>
@@ -302,7 +302,7 @@
          <attribute name="title">
           <string>FR</string>
          </attribute>
-         <widget class="QRadioButton" name="radioButton_4">
+         <widget class="QRadioButton" name="frenable">
           <property name="geometry">
            <rect>
             <x>20</x>
@@ -345,10 +345,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_9"/>
+            <widget class="QLineEdit" name="frfpline"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_7">
+            <widget class="QComboBox" name="frfpbox">
              <item>
               <property name="text">
                <string>Hz</string>
@@ -386,10 +386,10 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_10"/>
+            <widget class="QLineEdit" name="frfaline"/>
            </item>
            <item>
-            <widget class="QComboBox" name="comboBox_8">
+            <widget class="QComboBox" name="frfabox">
              <item>
               <property name="text">
                <string>Hz</string>
@@ -427,7 +427,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_11"/>
+            <widget class="QLineEdit" name="frapline"/>
            </item>
           </layout>
          </widget>
@@ -454,7 +454,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_12"/>
+            <widget class="QLineEdit" name="fraaline"/>
            </item>
           </layout>
          </widget>
@@ -528,7 +528,7 @@
           <string>Señal de Entrada</string>
          </property>
         </widget>
-        <widget class="QComboBox" name="comboBox">
+        <widget class="QComboBox" name="xinbox">
          <property name="geometry">
           <rect>
            <x>10</x>
@@ -585,10 +585,10 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_2"/>
+           <widget class="QLineEdit" name="xinampline"/>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_3">
+           <widget class="QComboBox" name="xinampbox">
             <item>
              <property name="text">
               <string>V</string>
@@ -626,7 +626,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_3"/>
+           <widget class="QLineEdit" name="xindutyline"/>
           </item>
          </layout>
         </widget>
@@ -653,10 +653,10 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="xinfrecline"/>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="xinfrecbox">
             <item>
              <property name="text">
               <string>Hz</string>
