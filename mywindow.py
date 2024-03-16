@@ -7,6 +7,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(mywindow, self).__init__()
         self.setupUi(self)
+        self.update()
         
     #extrae el número ingresado
     def getNum(self, lineedit):
@@ -61,3 +62,18 @@ class mywindow(QMainWindow, Ui_MainWindow):
             self.getNum(self.xindutyline)
         ]
         return dict(zip(l,v))
+    
+    #si hay un cambio llama al respectivo audio
+    def updateparams(self):
+        self.TabWidget.currentChanged.connect()
+        self.xinbox.activated.connect(lambda: self.update())
+        self.xinfrecline.activated.connect(lambda: self.update())
+        self.xinfrecbox.activated.connect(lambda: self.update())
+        self.xinampline.activated.connect(lambda: self.update())
+        self.xinampbox.activated.connect(lambda: self.update())
+        self.xindutyline.activated.connect(lambda: self.update())
+        
+    def update(self):
+        self.getIndex()
+        self.getEnable()
+        print("hola")
