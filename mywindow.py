@@ -65,8 +65,58 @@ class mywindow(QMainWindow, Ui_MainWindow):
         ]
         return dict(zip(l,v))
         
+    #retunea los parametros del FAA
+    def getFaa(self):
+        l=["fp","fp multi","fa","fa multi","Ap","Aa"]
+        v=[
+            self.getNum(self.faafpline),
+            self.getMultiplier(self.faafpbox,0),
+            self.getNum(self.faaaline),
+            self.getMultiplier(self.faaabox,0),
+            self.getNum(self.faaapline),
+            self.getNum(self.faaaaline)
+        ]
+        return dict(zip(l,v))
+        
+    #retunea los parametros del SH
+    def getSh(self):
+        l=["frec","frec multi"]
+        v=[
+            self.getNum(self.shfrecpline),
+            self.getMultiplier(self.shfrecbox,0)
+        ]
+        return dict(zip(l,v))
+    
+    #retunea los parametros del FR
+    def getFr(self):
+        l=["fp","fp multi","fa","fa multi","Ap","Aa"]
+        v=[
+            self.getNum(self.frfpline),
+            self.getMultiplier(self.frfpbox,0),
+            self.getNum(self.frfaline),
+            self.getMultiplier(self.frfabox,0),
+            self.getNum(self.frapline),
+            self.getNum(self.fraaline)
+        ]
+        return dict(zip(l,v))
+    
     def update(self):
         self.tabWidget.currentChanged.connect(lambda: print(self.getTabIndex()))
+        self.updatexin()
+        self.updateFaa()
+    
+    
+    #actualiza los parametros del faa  
+    def updateFaa(self):
+        self.faafpline.textChanged.connect(lambda: print("fp"))
+        self.faafpbox.activated.connect(lambda: print("fpbox"))
+        self.faafaline.textChanged.connect(lambda: print("fa"))
+        self.faafabox.activated.connect(lambda: print("fabox"))
+        self.faaapline.textChanged.connect(lambda: print("ap"))
+        self.faaaaline.textChanged.connect(lambda: print("aa"))
+        
+    #actualiza los parametros de entrada
+    def updatexin(self):
         self.xinbox.activated.connect(lambda: print("xinbox"))
         self.xinfrecline.textChanged.connect(lambda: print("frecline"))
         self.xinfrecbox.activated.connect(lambda: print("frecbox"))
@@ -75,7 +125,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.xindutyline.textChanged.connect(lambda: print("dutyline"))
         
         
-        
+    #inicializa los plots
     def initplots(self):
         #creo horizontal layouts
         self.horizontalLayout_15 = QtWidgets.QVBoxLayout(self.frame)
