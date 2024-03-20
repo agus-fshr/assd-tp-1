@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 from interfaz import Ui_MainWindow
+import pyqtgraph as pg
 
 class mywindow(QMainWindow, Ui_MainWindow):
 
@@ -8,6 +9,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         super(mywindow, self).__init__()
         self.setupUi(self)
         self.update()
+        self.initplots()
         
     #extrae el número ingresado
     def getNum(self, lineedit):
@@ -37,7 +39,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
 
     #devuelve el tab en el cual estas
     def getTabIndex(self):
-        return self.TabWidget.currentIndex()
+        return self.tabWidget.currentIndex()
     
     #retunea que esta prendido
     def getEnable(self):
@@ -62,18 +64,31 @@ class mywindow(QMainWindow, Ui_MainWindow):
             self.getNum(self.xindutyline)
         ]
         return dict(zip(l,v))
-    
-    #si hay un cambio llama al respectivo audio
-    def updateparams(self):
-        self.TabWidget.currentChanged.connect()
-        self.xinbox.activated.connect(lambda: self.update())
-        self.xinfrecline.activated.connect(lambda: self.update())
-        self.xinfrecbox.activated.connect(lambda: self.update())
-        self.xinampline.activated.connect(lambda: self.update())
-        self.xinampbox.activated.connect(lambda: self.update())
-        self.xindutyline.activated.connect(lambda: self.update())
         
     def update(self):
-        self.getIndex()
-        self.getEnable()
-        print("hola")
+        self.tabWidget.currentChanged.connect(lambda: print(self.getTabIndex()))
+        self.xinbox.activated.connect(lambda: print("xinbox"))
+        self.xinfrecline.textChanged.connect(lambda: print("frecline"))
+        self.xinfrecbox.activated.connect(lambda: print("frecbox"))
+        self.xinampline.textChanged.connect(lambda: print("ampline"))
+        self.xinampbox.activated.connect(lambda: print("ampbox"))
+        self.xindutyline.textChanged.connect(lambda: print("dutyline"))
+        
+        
+        
+    def initplots(self):
+        #creo horizontal layouts
+        self.horizontalLayout_15 = QtWidgets.QVBoxLayout(self.frame)
+        self.horizontalLayout_15.setObjectName("horizontalLayout_18")
+        self.horizontalLayout_16 = QtWidgets.QVBoxLayout(self.frame_2)
+        self.horizontalLayout_16.setObjectName("horizontalLayout_19")
+        
+        #Creo a PyQtGraph PlotWidget
+        self.plot_widget_1 = pg.PlotWidget()
+        self.plot_widget_2 = pg.PlotWidget()
+        
+        #Lo agrego a los layouts
+        self.horizontalLayout_15.addWidget(self.plot_widget_1)
+        self.horizontalLayout_16.addWidget(self.plot_widget_2)
+             
+        
