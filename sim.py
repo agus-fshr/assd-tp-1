@@ -120,3 +120,52 @@ plt.plot(time_array, zoh_filtered_square_wave, 'r', label='ZOH filtered signal')
 plt.legend()
 plt.xlim(0, 2 / freq)
 plt.show()
+
+#   _____                                    
+#  |  __ \                                   
+#  | |__) |___  ___ _____   _____ _ __ _   _ 
+#  |  _  // _ \/ __/ _ \ \ / / _ \ '__| | | |
+#  | | \ \  __/ (_| (_) \ V /  __/ |  | |_| |
+#  |_|  \_\___|\___\___/ \_/ \___|_|   \__, |
+#                                       __/ |
+#                                      |___/ 
+
+wave_out = signal.lfilter(b, a, zoh_filtered_square_wave)
+
+# Plot wave_out, zoh_filtered_square_wave and square_wave_in all on top of each other
+plt.plot(time_array, filtered_square_wave, 'b', label='AAF Signal')
+plt.plot(time_array, zoh_filtered_square_wave, 'r', label='ZOH filtered signal')
+plt.plot(time_array, wave_out, 'g', label='Recovered signal')
+plt.legend()
+plt.xlim(0, 2 / freq)
+plt.show()
+
+#    _____         _ _       _      
+#   / ____|       (_) |     | |     
+#  | (_____      ___| |_ ___| |__   
+#   \___ \ \ /\ / / | __/ __| '_ \  
+#   ____) \ V  V /| | || (__| | | | 
+#  |_____/ \_/\_/ |_|\__\___|_| |_| 
+                                  
+buf = 0
+switched_signal = []
+switch_open = False # Start with the switch closed
+for i, c in enumerate(filtered_square_wave):
+    buf += SIM_RESOLUTION
+    if buf >= 1/f_sample:
+        buf = 0
+        switch_open = not switch_open
+        if switch_open:
+            switched_signal.append(0)
+        else:
+            switched_signal.append(c)
+    else:
+        if switch_open:
+            switched_signal.append(0)
+        else:
+            switched_signal.append(c)
+
+# Plot the switched signal
+plt.plot(time_array, switched_signal)
+plt.xlim(0, 2 / freq)
+plt.show()
