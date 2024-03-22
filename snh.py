@@ -80,11 +80,35 @@ class Filter():
         plt.show()
 
     def apply(self, in_wave):
-        return signal.lsim(self.b, self.a, in_wave)[1]
+        out_wave = signal.lsim(self.b, self.a, in_wave)[1]
+        return out_wave
     
 class ZOH():
-    def __init__(self):
-        pass
+    def __init__(self, f_sample: float, sim: Sim):
+        buf = 0
+        self.zoh_mask = []
+        for t in sim.T:
+            buf += sim.dt
+            if buf >= 1/f_sample:
+                buf = 0
+                self.zoh_mask.append(not self.zoh_mask[-1])
+            else:
+                if len(self.zoh_mask):
+                    self.zoh_mask.append(self.zoh_mask[-1])
+                else:
+                    self.zoh_mask.append(True)
 
     def apply(self, in_wave):
-        return in_wave
+        out_wave = []
+        for i, v in enumerate(in_wave):
+            if self.zoh_mask[i]:
+                out_wave.append(v)
+            else:
+                hold_val = out_wave[-1]
+                out_wave.append(hold_val)
+        return out_wave
+    
+class Switch():
+    def __init__(self, sim: Sim):
+        # TODO: implement
+        pass
