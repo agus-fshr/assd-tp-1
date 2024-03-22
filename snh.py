@@ -20,8 +20,7 @@ class Sim():
             'recovery_filter': True
         }
 
-
-    def gen_square_wave(self, frequency, amplitude, duty_cycle):
+    def gen_square_wave(self, frequency: float, amplitude: float, duty_cycle: float):
         self.square_wave = amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
         return amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
     
@@ -29,30 +28,63 @@ class Sim():
         plt.plot(self.time_array, square_wave)
         plt.xlim(0, 2 / square_wave.frequency)
         plt.show()
+
+    def makeCircuit(self, components):
+        for k, v in components.items():
+            if v:
+                self.components[k] = getattr(self, k, None)
+            else:
+                self.components[k] = None
+
+    def simulate(self):
+        curr_in_wave = []
+        curr_out_wave = []
+        self.traces = {}
+        for k,v in self.components.items():
+            if k == 'square_wave':
+                curr_in_wave = self.square_wave
+                continue
+            if v:
+                curr_out_wave = k.apply(curr_in_wave)
+                self.traces[k] = curr_out_wave
+
+                
+
     
-    def design_chebyshev_filter(self, fp, fa, Ap, Aa, fs):
-        wp = fp / (fs/2)
-        wa = fa / (fs/2)
-        N, Wn = signal.cheb1ord(wp, wa, Ap, Aa)
-        b, a = signal.cheby1(N, Ap, Wn, 'low')
-        w, h = signal.freqz(b, a, fs=fs)
-        return a, b, w, h, Wn, Ap, fs
-        
-    def plot_filter_response(self, w, h, Wn, Ap, fs):
+class Filter():
+    def __init__(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
+        self.redesign(fp, fa, Ap, Aa, fs)
+
+    def redesign(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
+        self.fp = fp
+        self.fa = fa
+        self.Ap = Ap
+        self.Aa = Aa
+        self.fs = fs
+        self.wp = fp / (fs/2)
+        self.wa = fa / (fs/2)
+        self.N, self.Wn = signal.cheb1ord(self.wp, self.wa, self.Ap, self.Aa)
+        self.b, self.a = signal.cheby1(self.N, self.Ap, self.Wn, 'low')
+        self.w, self.h = signal.freqz(self.b, self.a, fs=self.fs)
+    
+    def plot(self, title = 'Chebyshev Type I lowpass filter frequency response'):
         plt.figure()
-        plt.semilogx(w, 20 * np.log10(abs(h)), 'b')  # Change to semilogx
-        plt.semilogx(Wn*fs/2, -Ap, 'ro')  # Change to semilogx
-        plt.title('Chebyshev Type I lowpass filter frequency response')
+        plt.semilogx(self.w, 20 * np.log10(abs(self.h)), 'b')
+        plt.semilogx(self.Wn*self.fs/2, -self.Ap, 'ro')
+        plt.title(title)
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Amplitude [dB]')
         plt.margins(0, 0.1)
         plt.grid(which='both', axis='both')
-        plt.axvline(Wn*fs/2, color='green')  # cutoff frequency
-        plt.ylim(-50, 1)
-        # plt.xlim(0, 90e3)
+        plt.axvline(self.Wn*self.fs/2, color='green')
         plt.show()
 
-    def apply_filter(self, b, a, in_wave):
-        out_wave = signal.lfilter(b, a, in_wave)
-        self.aaf = out_wave
-        return out_wave
+    def apply(self, in_wave):
+        return signal.lsim(self.b, self.a, in_wave)[1]
+    
+class ZOH():
+    def __init__(self):
+        pass
+
+    def apply(self, in_wave):
+        return in_wave
