@@ -29,6 +29,7 @@ class Sim():
         plt.xlim(0, 2 / square_wave.frequency)
         plt.show()
 
+    # Put the self.attrs in a map if they are True in the components map
     def makeCircuit(self, components):
         for k, v in components.items():
             if v:
@@ -36,6 +37,7 @@ class Sim():
             else:
                 self.components[k] = None
 
+    # Propagate the wave through the circuit
     def simulate(self):
         curr_in_wave = []
         curr_out_wave = []
@@ -55,6 +57,7 @@ class Filter():
     def __init__(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
         self.redesign(fp, fa, Ap, Aa, fs)
 
+    # Reinstantiate
     def redesign(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
         self.fp = fp
         self.fa = fa
@@ -109,6 +112,27 @@ class ZOH():
         return out_wave
     
 class Switch():
-    def __init__(self, sim: Sim):
-        # TODO: implement
-        pass
+    def __init__(self, f_sample: float, sim: Sim):
+        self.f_sample = f_sample
+        self.T = sim.T
+        self.dt = sim.dt
+
+    def apply(self, in_wave):
+        buf = 0
+        out_wave = []
+        switch_open = False
+        for i, v in enumerate(in_wave):
+            buf += self.dt
+            if buf >= 1/self.f_sample:
+                buf = 0
+                switch_open = not switch_open
+                if switch_open:
+                    out_wave.append(0)
+                else:
+                    out_wave.append(v)
+            else:
+                if switch_open:
+                    out_wave.append(0)
+                else:
+                    out_wave.append(v)
+        return out_wave
