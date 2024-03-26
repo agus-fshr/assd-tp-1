@@ -13,12 +13,13 @@ class Sim():
         self.switch = None
         self.recovery_filter = None
         self.components = {
-            'square_wave': True,
-            'aaf': True,
-            'zoh': True,
-            'switch': True,
-            'recovery_filter': True
+            'square_wave': self.square_wave,
+            'aaf': self.aaf,
+            'zoh': self.zoh,
+            'switch': self.switch,
+            'recovery_filter': self.recovery_filter
         }
+        self.traces = {}
 
     def gen_square_wave(self, frequency: float, amplitude: float, duty_cycle: float):
         self.square_wave = amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
@@ -31,13 +32,10 @@ class Sim():
 
     # Put the self.attrs in a map if they are True in the components map
     def makeCircuit(self, components):
-        for k, v in components.items():
-            if v:
-                self.components[k] = getattr(self, k, None)
-            else:
-                self.components[k] = None
+        self.components = components
 
     # Propagate the wave through the circuit
+    # TODO: I think there is a bug here where the waves are not propagated correctly
     def simulate(self):
         curr_in_wave = []
         curr_out_wave = []
@@ -45,10 +43,14 @@ class Sim():
         for k,v in self.components.items():
             if k == 'square_wave':
                 curr_in_wave = self.square_wave
+                self.traces[k] = curr_in_wave
                 continue
             if v:
-                curr_out_wave = k.apply(curr_in_wave)
+                curr_out_wave = v.apply(curr_in_wave)
                 self.traces[k] = curr_out_wave
+                curr_in_wave = curr_out_wave
+            
+        return self.traces
 
                 
 
@@ -82,6 +84,7 @@ class Filter():
         plt.axvline(self.Wn*self.fs/2, color='green')
         plt.show()
 
+    # TODO: Make sure lfilter/lsim are doing their thing here
     def apply(self, in_wave):
         out_wave = signal.lsim(self.b, self.a, in_wave)[1]
         return out_wave
@@ -90,7 +93,7 @@ class ZOH():
     def __init__(self, f_sample: float, sim: Sim):
         buf = 0
         self.zoh_mask = []
-        for t in sim.T:
+        for t in sim.time_array:
             buf += sim.dt
             if buf >= 1/f_sample:
                 buf = 0
