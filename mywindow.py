@@ -82,7 +82,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         
     #retunea los parametros del FAA
     def getFaa(self):
-        l=["fp","fp multi","fa","fa multi","Ap","Aa"]
+        l=["fp","fp_mult","fa","fa_mult","ap","aa"]
         v=[
             self.getNum(self.faafpline),
             self.getMultiplier(self.faafpbox,0),
@@ -95,7 +95,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         
     #retunea los parametros del SH
     def getSh(self):
-        l=["frec","frec multi"]
+        l=["f","f_mult"]
         v=[
             self.getNum(self.shfrecline),
             self.getMultiplier(self.shfrecbox,0)
@@ -104,7 +104,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
     
     #retunea los parametros del FR
     def getFr(self):
-        l=["fp","fp multi","fa","fa multi","Ap","Aa"]
+        l=["fp","fp_mult","fa","fa_mult","ap","aa"]
         v=[
             self.getNum(self.frfpline),
             self.getMultiplier(self.frfpbox,0),
@@ -136,9 +136,10 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.faaaaline.textChanged.connect(lambda: self.setFAA())        
         self.faaenable.toggled.connect(lambda: self.setFAA())
 
-        # Toggle Button
         # Sample and Hold
         self.shenabale.toggled.connect(lambda: self.setSampleAndHold())
+        self.shfrecbox.activated.connect(lambda: self.setSampleAndHold())
+        self.shfrecline.textChanged.connect(lambda: self.setSampleAndHold())
         
     #inicializa los plots
     def initplots(self):
@@ -189,11 +190,20 @@ class mywindow(QMainWindow, Ui_MainWindow):
 
     def setSampleAndHold(self):
         shDict = self.getSh()
+        f_sample = shDict["f"] * shDict["f_mult"]
+        if not isinstance(f_sample, float) or f_sample == 0:
+            QMessageBox.warning(self, "Error", "Frecuencia de muestreo no puede ser 0")
+            return
+        self.sim.components["zoh"].setup(f_sample=f_sample, sim=self.sim)
         self.sim.components["zoh"].enabled = self.getEnable("sh")
         self.update_plots()
 
     def setFAA(self):
         faaDict = self.getFaa()
-        self.sim.components["filter"].redesign(faaDict["fp"], faaDict["fa"], faaDict["Ap"], faaDict["Aa"])
+        self.sim.components["filter"].redesign(faaDict["fp"], faaDict["fa"], faaDict["ap"], faaDict["aa"])
         self.sim.components["filter"].enabled = self.getEnable("faa")
-        self.update_plots()
+        fil = self.sim.components["filter"]
+        print("Ap, Aa, fa, fp, ord, b, a")
+        print(fil.Ap, fil.Aa, fil.fa, fil.fp, fil.ord, fil.b, fil.a)
+        
+        # self.update_plots()

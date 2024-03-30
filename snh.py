@@ -112,9 +112,13 @@ class Chevy1_LPF:
 class ZOH():
     def __init__(self, f_sample: float, sim: Sim):
         self.enabled = False
+        self.setup(f_sample, sim)
+
+    def setup(self, f_sample: float, sim: Sim):
         buf = 0
         self.zoh_mask = []
         for t in sim.time_array:
+
             buf += sim.dt
             if buf >= 1/f_sample:
                 buf = 0
