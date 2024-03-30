@@ -53,42 +53,55 @@ class Sim():
         return self.traces
 
                 
+# CHEVYSHEV TYPE I LOW PASS FILTER
+class Chevy1_LPF:
+    def __init__(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, maxord=10):
+        self.redesign(fp, fa, Ap, Aa, maxord)
 
-    
-class Filter():
-    def __init__(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
-        self.redesign(fp, fa, Ap, Aa, fs)
-
-    # Reinstantiate
-    def redesign(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, fs=1e6):
-        self.fp = fp
-        self.fa = fa
+    def redesign(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, maxord=10):
         self.Ap = Ap
         self.Aa = Aa
-        self.fs = fs
-        self.wp = fp / (fs/2)
-        self.wa = fa / (fs/2)
-        self.N, self.Wn = signal.cheb1ord(self.wp, self.wa, self.Ap, self.Aa)
-        self.b, self.a = signal.cheby1(self.N, self.Ap, self.Wn, 'low')
-        self.w, self.h = signal.freqz(self.b, self.a, fs=self.fs)
-    
-    def plot(self, title = 'Chebyshev Type I lowpass filter frequency response'):
-        plt.figure()
-        plt.semilogx(self.w, 20 * np.log10(abs(self.h)), 'b')
-        plt.semilogx(self.Wn*self.fs/2, -self.Ap, 'ro')
-        plt.title(title)
+        self.fp = fp
+        self.fa = fa
+
+        self.ord = min(signal.cheb1ord(2*np.pi*fp, 2*np.pi*fa, Ap, Aa, analog=True)[0], maxord)
+        self.b, self.a = signal.cheby1(self.ord, Ap, 2*np.pi*fp, btype='low', analog=True, output='ba')
+        self.tf = signal.TransferFunction(self.b, self.a)
+        self.lti = signal.lti(self.b, self.a)
+
+    def plotPZMap(self):
+        # Plot the poles and zeros of the filter
+        z, p, k = signal.tf2zpk(self.b, self.a)
+        plt.plot(np.real(z), np.imag(z), 'bo', label='Zeros')
+        plt.plot(np.real(p), np.imag(p), 'rx', label='Poles')
+        plt.title('Poles and Zeros')
+        plt.xlabel('Real')
+        plt.ylabel('Imaginary')
+        plt.grid(which='both', axis='both')
+        plt.legend()
+        plt.show()
+
+    def plotResponse(self, f0, f1, ylim=[-50, 5]):
+        # Plot the frequency response
+        f_log = np.logspace(f0, f1, 1000)
+        w_log = 2 * np.pi * f_log
+        w, mag, phase = signal.bode(self.tf, w_log)
+        f = w / (2 * np.pi)
+        print("Filter order: ", self.ord)
+        plt.semilogx(f, mag)
+        plt.title('Chebyshev Type I frequency response')
         plt.xlabel('Frequency [Hz]')
         plt.ylabel('Amplitude [dB]')
         plt.margins(0, 0.1)
         plt.grid(which='both', axis='both')
-        plt.axvline(self.Wn*self.fs/2, color='green')
+        plt.ylim(ylim)
         plt.show()
 
-    # TODO: Make sure lfilter/lsim are doing their thing here
-    def apply(self, in_wave, time):
-        sis = signal.lti(self.b, self.a)
-        out_wave = signal.lsim(sis, in_wave, time)[1]
-        return out_wave
+    def apply(self, wave, time):
+        # Filter the continuous signal doing the convolution of the input signal with the impulse response
+        _, y, _ = signal.lsim(self.lti, wave, time)
+        return y
+    
     
 class ZOH():
     def __init__(self, f_sample: float, sim: Sim):
