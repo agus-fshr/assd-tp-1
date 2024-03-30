@@ -12,6 +12,7 @@ class Sim():
         self.zoh = None
         self.switch = None
         self.recovery_filter = None
+        self.output = None
         self.components = {
             'wave': self.wave,
             'aaf': self.aaf,
@@ -23,15 +24,19 @@ class Sim():
 
     def gen_square_wave(self, frequency: float, amplitude: float, duty_cycle: float):
         self.wave = amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
+        self.output = self.wave
         return amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
 
+    def gen_sine_wave(self, frequency: float, amplitude: float):
+        self.wave = amplitude * np.sin(2 * np.pi * frequency * self.time_array)
+        self.output = self.wave
+        return amplitude * np.sin(2 * np.pi * frequency * self.time_array)
 
     # Put the self.attrs in a map if they are True in the components map
     def makeCircuit(self, components):
         self.components = components
 
     # Propagate the wave through the circuit
-    # TODO: I think there is a bug here where the waves are not propagated correctly
     def simulate(self):
         curr_in_wave = []
         curr_out_wave = []
@@ -45,6 +50,8 @@ class Sim():
                 curr_out_wave = v.apply(curr_in_wave, self.time_array)
                 self.traces[k] = curr_out_wave
                 curr_in_wave = curr_out_wave
+
+        self.output = curr_out_wave
             
         return self.traces
 
