@@ -2,13 +2,26 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5 import QtCore, QtGui, QtWidgets
 from interfaz import Ui_MainWindow
 import pyqtgraph as pg
+import snh
+import copy
 
 class mywindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super(mywindow, self).__init__()
+
+        self.sim = snh.Sim(1e-3, 1e-9)
+        # Connect everything
+        self.sim.makeCircuit({
+            'square_wave': self.sim.gen_square_wave(7.5e3, 1, 0.75),
+            'filter': snh.Chevy1_LPF(fp=35e3, fa=2*35e3, Ap=1, Aa=40),
+            'zoh': snh.ZOH(f_sample=1e5, sim=self.sim),
+            'switch': snh.Switch(f_sample=1e5, sim=self.sim),
+            'recovery_filter': snh.Chevy1_LPF(fp=35e3, fa=2*35e3, Ap=1, Aa=40),
+        })
+
         self.setupUi(self)
-        self.update()
+        self.connectEvents()
         self.initplots()
         
     #extrae el número ingresado
@@ -26,14 +39,14 @@ class mywindow(QMainWindow, Ui_MainWindow):
     def getMultiplier(self, combobox, flag):
         comboboxindex = combobox.currentIndex()
         if flag == 0:               #si el flag es 0 entonces es frecuencia
-            if comboboxindex == 0:
+            if comboboxindex == 0:      # Hz
                 multiplier = 1
-            elif comboboxindex == 1:
+            elif comboboxindex == 1:    # KHz
                 multiplier = 1000
         else:
-            if comboboxindex == 0:
+            if comboboxindex == 0:      # V
                 multiplier = 1
-            elif comboboxindex == 1:
+            elif comboboxindex == 1:    # mV
                 multiplier = 0.001
         return multiplier
 
@@ -54,7 +67,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
     
     #returnea los parametros de entrada
     def getXin(self):
-        l=["tipo","frec","frec multi", "amplitud", "amplitud multi","duty"]
+        l=["tipo","f","f_mult", "amp", "amp_mult","duty"]
         v=[
             self.getIndex(self.xinbox),             #0 senoidal, 1 cuadrada, 2 triangular
             self.getNum(self.xinfrecline),
@@ -63,6 +76,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
             self.getMultiplier(self.xinampbox,1),
             self.getNum(self.xindutyline)
         ]
+        print(self.getIndex(self.xinbox), self.xinbox)
         return dict(zip(l,v))
         
     #retunea los parametros del FAA
@@ -82,7 +96,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
     def getSh(self):
         l=["frec","frec multi"]
         v=[
-            self.getNum(self.shfrecpline),
+            self.getNum(self.shfrecline),
             self.getMultiplier(self.shfrecbox,0)
         ]
         return dict(zip(l,v))
@@ -100,30 +114,26 @@ class mywindow(QMainWindow, Ui_MainWindow):
         ]
         return dict(zip(l,v))
     
-    def update(self):
+    def connectEvents(self):
+        # Input Signal
         self.tabWidget.currentChanged.connect(lambda: print(self.getTabIndex()))
-        self.updatexin()
-        self.updateFaa()
-    
-    
-    #actualiza los parametros del faa  
-    def updateFaa(self):
+        self.xinbox.activated.connect(lambda: self.setWave())  # ID Señal de entrada
+        self.xinfrecline.textChanged.connect(lambda: self.setWave())
+        self.xinfrecbox.activated.connect(lambda: self.setWave())
+        self.xinampline.textChanged.connect(lambda: self.setWave())
+        self.xinampbox.activated.connect(lambda: self.setWave())
+        self.xindutyline.textChanged.connect(lambda: self.setWave())
+
+        # FAA
         self.faafpline.textChanged.connect(lambda: print("fp"))
         self.faafpbox.activated.connect(lambda: print("fpbox"))
         self.faafaline.textChanged.connect(lambda: print("fa"))
         self.faafabox.activated.connect(lambda: print("fabox"))
         self.faaapline.textChanged.connect(lambda: print("ap"))
-        self.faaaaline.textChanged.connect(lambda: print("aa"))
-        
-    #actualiza los parametros de entrada
-    def updatexin(self):
-        self.xinbox.activated.connect(lambda: print("xinbox"))
-        self.xinfrecline.textChanged.connect(lambda: print("frecline"))
-        self.xinfrecbox.activated.connect(lambda: print("frecbox"))
-        self.xinampline.textChanged.connect(lambda: print("ampline"))
-        self.xinampbox.activated.connect(lambda: print("ampbox"))
-        self.xindutyline.textChanged.connect(lambda: print("dutyline"))
-        
+        self.faaaaline.textChanged.connect(lambda: print("aa"))        
+
+        # Sample and Hold
+        self.shenabale.toggled.connect(lambda: self.setSampleAndHold())
         
     #inicializa los plots
     def initplots(self):
@@ -141,4 +151,19 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.horizontalLayout_15.addWidget(self.plot_widget_1)
         self.horizontalLayout_16.addWidget(self.plot_widget_2)
              
-        
+    def update_plots(self):
+
+    def setWave(self):
+        # ["tipo","f","f_mult", "amp", "amp_mult","duty"]
+        xinDict = self.getXin()
+        frec = xinDict["f"] * xinDict["f_mult"]
+        amp = xinDict["amp"] * xinDict["amp_mult"]
+        duty = xinDict["duty"]
+
+        if xinDict["tipo"] == 1: #0 senoidal, 1 cuadrada, 2 triangular
+            self.sim.components["wave"] = self.sim.gen_square_wave(frec, amp, duty)
+
+    def setSampleAndHold(self):
+        shDict = self.getSh()
+        isChecked = self.shenabale.isChecked()
+        print(shDict, isChecked)

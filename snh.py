@@ -7,13 +7,13 @@ class Sim():
         self.T = T
         self.dt = dt
         self.time_array = np.arange(0, T, dt)
-        self.square_wave = None
+        self.wave = None
         self.aaf = None
         self.zoh = None
         self.switch = None
         self.recovery_filter = None
         self.components = {
-            'square_wave': self.square_wave,
+            'wave': self.wave,
             'aaf': self.aaf,
             'zoh': self.zoh,
             'switch': self.switch,
@@ -22,13 +22,9 @@ class Sim():
         self.traces = {}
 
     def gen_square_wave(self, frequency: float, amplitude: float, duty_cycle: float):
-        self.square_wave = amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
+        self.wave = amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
         return amplitude * signal.square(2 * np.pi * frequency * self.time_array, duty=duty_cycle)
-    
-    def plot_square_wave(self, square_wave):
-        plt.plot(self.time_array, square_wave)
-        plt.xlim(0, 2 / square_wave.frequency)
-        plt.show()
+
 
     # Put the self.attrs in a map if they are True in the components map
     def makeCircuit(self, components):
@@ -41,8 +37,8 @@ class Sim():
         curr_out_wave = []
         self.traces = {}
         for k,v in self.components.items():
-            if k == 'square_wave':
-                curr_in_wave = self.square_wave
+            if k == 'wave':
+                curr_in_wave = self.wave
                 self.traces[k] = curr_in_wave
                 continue
             if v:
@@ -56,6 +52,7 @@ class Sim():
 # CHEVYSHEV TYPE I LOW PASS FILTER
 class Chevy1_LPF:
     def __init__(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, maxord=10):
+        self.enabled = False
         self.redesign(fp, fa, Ap, Aa, maxord)
 
     def redesign(self, fp=50e3, fa=2*50e3, Ap=1, Aa=40, maxord=10):
@@ -98,6 +95,8 @@ class Chevy1_LPF:
         plt.show()
 
     def apply(self, wave, time):
+        if not self.enabled:
+            return wave
         # Filter the continuous signal doing the convolution of the input signal with the impulse response
         _, y, _ = signal.lsim(self.lti, wave, time)
         return y
@@ -105,6 +104,7 @@ class Chevy1_LPF:
     
 class ZOH():
     def __init__(self, f_sample: float, sim: Sim):
+        self.enabled = False
         buf = 0
         self.zoh_mask = []
         for t in sim.time_array:
@@ -119,6 +119,8 @@ class ZOH():
                     self.zoh_mask.append(True)
 
     def apply(self, in_wave, time):
+        if not self.enabled:
+            return in_wave
         out_wave = []
         for i, v in enumerate(in_wave):
             if self.zoh_mask[i]:
@@ -130,11 +132,14 @@ class ZOH():
     
 class Switch():
     def __init__(self, f_sample: float, sim: Sim):
+        self.enabled = False
         self.f_sample = f_sample
         self.T = sim.T
         self.dt = sim.dt
 
     def apply(self, in_wave, time):
+        if not self.enabled:
+            return in_wave
         buf = 0
         out_wave = []
         switch_open = False
