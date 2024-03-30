@@ -46,7 +46,7 @@ class Sim():
                 self.traces[k] = curr_in_wave
                 continue
             if v:
-                curr_out_wave = v.apply(curr_in_wave)
+                curr_out_wave = v.apply(curr_in_wave, self.time_array)
                 self.traces[k] = curr_out_wave
                 curr_in_wave = curr_out_wave
             
@@ -85,8 +85,9 @@ class Filter():
         plt.show()
 
     # TODO: Make sure lfilter/lsim are doing their thing here
-    def apply(self, in_wave):
-        out_wave = signal.lsim(self.b, self.a, in_wave)[1]
+    def apply(self, in_wave, time):
+        sis = signal.lti(self.b, self.a)
+        out_wave = signal.lsim(sis, in_wave, time)[1]
         return out_wave
     
 class ZOH():
@@ -104,7 +105,7 @@ class ZOH():
                 else:
                     self.zoh_mask.append(True)
 
-    def apply(self, in_wave):
+    def apply(self, in_wave, time):
         out_wave = []
         for i, v in enumerate(in_wave):
             if self.zoh_mask[i]:
@@ -120,7 +121,7 @@ class Switch():
         self.T = sim.T
         self.dt = sim.dt
 
-    def apply(self, in_wave):
+    def apply(self, in_wave, time):
         buf = 0
         out_wave = []
         switch_open = False
