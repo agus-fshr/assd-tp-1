@@ -165,7 +165,12 @@ class mywindow(QMainWindow, Ui_MainWindow):
         
         #Creo a PyQtGraph PlotWidget
         self.plot_widget_1 = pg.PlotWidget()
+        self.plot_widget_1.setLabel('left', 'Amplitud', units='V')
+        self.plot_widget_1.setLabel('bottom', 'Tiempo', units='s')
+        
         self.plot_widget_2 = pg.PlotWidget()
+        self.plot_widget_2.setLabel('left', 'Amplitud', units='V')
+        self.plot_widget_2.setLabel('bottom', 'Frecuencia', units='Hz')
         self.plot_widget_2.plotItem.setLogMode(True, False)
         
         #Lo agrego a los layouts
