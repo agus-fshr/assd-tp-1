@@ -167,11 +167,13 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.plot_widget_1 = pg.PlotWidget()
         self.plot_widget_1.setLabel('left', 'Amplitud', units='V')
         self.plot_widget_1.setLabel('bottom', 'Tiempo', units='s')
+        self.plot_widget_1.plotItem.showGrid(True, True)
         
         self.plot_widget_2 = pg.PlotWidget()
         self.plot_widget_2.setLabel('left', 'Amplitud', units='V')
         self.plot_widget_2.setLabel('bottom', 'Frecuencia', units='Hz')
         self.plot_widget_2.plotItem.setLogMode(True, False)
+        self.plot_widget_2.plotItem.showGrid(True, True)
         
         #Lo agrego a los layouts
         self.horizontalLayout_15.addWidget(self.plot_widget_1)
@@ -196,6 +198,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
 
         n = len(output)
         X = np.fft.rfft(output)
+        X = X / n
         freqs = np.fft.rfftfreq(n, d=self.sim.dt)
         print( len(X), len(freqs) )
         self.plot_widget_2.plot(freqs, np.abs(X), pen='r')
