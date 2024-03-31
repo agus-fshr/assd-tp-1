@@ -4,13 +4,14 @@ from interfaz import Ui_MainWindow
 import pyqtgraph as pg
 import snh
 import copy
+import numpy as np
 
 class mywindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self):
         super(mywindow, self).__init__()
 
-        self.sim = snh.Sim(1e-3, 1e-9)
+        self.sim = snh.Sim(10e-3, 1e-7)
         # Connect everything
         self.sim.makeCircuit({
             'wave': self.sim.gen_square_wave(7.5e3, 1, 0.75),
@@ -84,12 +85,12 @@ class mywindow(QMainWindow, Ui_MainWindow):
     def getFaa(self):
         l=["fp","fp_mult","fa","fa_mult","ap","aa"]
         v=[
-            self.getNum(self.faafpline),
-            self.getMultiplier(self.faafpbox,0),
-            self.getNum(self.faaaaline),
-            self.getMultiplier(self.faafabox,0),
-            self.getNum(self.faaapline),
-            self.getNum(self.faaaaline)
+            self.getNum(self.faafpline),            # fp
+            self.getMultiplier(self.faafpbox,0),    # fp_mult
+            self.getNum(self.faafaline),            # fa
+            self.getMultiplier(self.faafabox,0),    # fa_mult
+            self.getNum(self.faaapline),            # ap
+            self.getNum(self.faaaaline)             # aa
         ]
         return dict(zip(l,v))
         
@@ -140,6 +141,19 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.shenabale.toggled.connect(lambda: self.setSampleAndHold())
         self.shfrecbox.activated.connect(lambda: self.setSampleAndHold())
         self.shfrecline.textChanged.connect(lambda: self.setSampleAndHold())
+
+        # Switch
+        self.llaveanalenable.toggled.connect(lambda: self.setSampleAndHold())   # Uso  la misma funcion
+
+        # Recovery Filter
+        self.frenable.toggled.connect(lambda: self.setRecoveryFilter())
+        self.frfpline.textChanged.connect(lambda: self.setRecoveryFilter())
+        self.frfpbox.activated.connect(lambda: self.setRecoveryFilter())
+        self.frfaline.textChanged.connect(lambda: self.setRecoveryFilter())
+        self.frfabox.activated.connect(lambda: self.setRecoveryFilter())
+        self.frapline.textChanged.connect(lambda: self.setRecoveryFilter())
+        self.fraaline.textChanged.connect(lambda: self.setRecoveryFilter())
+
         
     #inicializa los plots
     def initplots(self):
@@ -152,6 +166,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         #Creo a PyQtGraph PlotWidget
         self.plot_widget_1 = pg.PlotWidget()
         self.plot_widget_2 = pg.PlotWidget()
+        self.plot_widget_2.plotItem.setLogMode(True, False)
         
         #Lo agrego a los layouts
         self.horizontalLayout_15.addWidget(self.plot_widget_1)
@@ -170,8 +185,16 @@ class mywindow(QMainWindow, Ui_MainWindow):
 
         # Update the plots
         self.plot_widget_1.clear()
+        self.plot_widget_2.clear()
+
         self.plot_widget_1.plot(self.sim.time_array, output, pen='r')
 
+        n = len(output)
+        X = np.fft.rfft(output)
+        freqs = np.fft.rfftfreq(n, d=self.sim.dt)
+        print( len(X), len(freqs) )
+        self.plot_widget_2.plot(freqs, np.abs(X), pen='r')
+        
 
     def setWave(self):
         # ["tipo","f","f_mult", "amp", "amp_mult","duty"]
@@ -188,6 +211,17 @@ class mywindow(QMainWindow, Ui_MainWindow):
 
         self.update_plots()
 
+    def setFAA(self):
+        faaDict = self.getFaa()
+        fp = faaDict["fp"] * faaDict["fp_mult"]
+        fa = faaDict["fa"] * faaDict["fa_mult"]
+        self.sim.components["filter"].redesign(fp, fa, faaDict["ap"], faaDict["aa"])
+        self.sim.components["filter"].enabled = self.getEnable("faa")
+        
+        # fil = self.sim.components["filter"]
+        # fil.print_debug()
+        self.update_plots()
+
     def setSampleAndHold(self):
         shDict = self.getSh()
         f_sample = shDict["f"] * shDict["f_mult"]
@@ -196,14 +230,13 @@ class mywindow(QMainWindow, Ui_MainWindow):
             return
         self.sim.components["zoh"].setup(f_sample=f_sample, sim=self.sim)
         self.sim.components["zoh"].enabled = self.getEnable("sh")
-        self.update_plots()
+        self.sim.components["switch"].enabled = self.getEnable("switch")
+        self.update_plots()        
 
-    def setFAA(self):
-        faaDict = self.getFaa()
-        self.sim.components["filter"].redesign(faaDict["fp"], faaDict["fa"], faaDict["ap"], faaDict["aa"])
-        self.sim.components["filter"].enabled = self.getEnable("faa")
-        fil = self.sim.components["filter"]
-        print("Ap, Aa, fa, fp, ord, b, a")
-        print(fil.Ap, fil.Aa, fil.fa, fil.fp, fil.ord, fil.b, fil.a)
-        
-        # self.update_plots()
+    def setRecoveryFilter(self):
+        frDict = self.getFr()
+        fp = frDict["fp"] * frDict["fp_mult"]
+        fa = frDict["fa"] * frDict["fa_mult"]
+        self.sim.components["recovery_filter"].redesign(fp, fa, frDict["ap"], frDict["aa"])
+        self.sim.components["recovery_filter"].enabled = self.getEnable("fr")
+        self.update_plots()

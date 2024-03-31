@@ -85,6 +85,11 @@ class Chevy1_LPF:
         plt.legend()
         plt.show()
 
+    def print_debug(self):
+        print("\nDEBUG FILTER:")
+        print("Ap:", self.Ap,"Aa:", self.Aa, "fp:", self.fp, "fa:", self.fa, "ord:", self.ord, "b:", self.b, "a:", self.a)
+        print()
+
     def plotResponse(self, f0, f1, ylim=[-50, 5]):
         # Plot the frequency response
         f_log = np.logspace(f0, f1, 1000)
