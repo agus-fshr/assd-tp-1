@@ -1,7 +1,8 @@
 # assd-tp-1
 
+Simple sample and hold system simulator GUI.
+
 ## Usage
----
 In a shell environment run
 
 ```bash
