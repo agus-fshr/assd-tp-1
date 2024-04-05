@@ -239,6 +239,7 @@ class mywindow(QMainWindow, Ui_MainWindow):
         self.sim.components["zoh"].setup(f_sample=f_sample, sim=self.sim)
         self.sim.components["zoh"].enabled = self.getEnable("sh")
         self.sim.components["switch"].enabled = self.getEnable("switch")
+        self.sim.components["switch"].f_sample = f_sample
         self.update_plots()        
 
     def setRecoveryFilter(self):

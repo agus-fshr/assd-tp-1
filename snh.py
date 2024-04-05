@@ -164,12 +164,12 @@ class Switch():
             if buf >= 1/self.f_sample:
                 buf = 0
                 switch_open = not switch_open
-                if switch_open:
+                if not switch_open:
                     out_wave.append(0)
                 else:
                     out_wave.append(v)
             else:
-                if switch_open:
+                if not switch_open:
                     out_wave.append(0)
                 else:
                     out_wave.append(v)
